@@ -1,5 +1,12 @@
-# This workflows will upload a Python Package using Twine when a release is created
-name: Upload Python Package
+# This workflow is triggered two ways:
+#
+# 1. When a tag is created, the workflow will upload the package to
+#    test.pypi.org.
+# 2. When a release is made, the workflow will upload the package to pypi.org.
+#
+# It is done this way until PyPI has draft reviews, to allow for a two-stage
+# upload with a chance for manual intervention before the final publication.
+name: Upload package
 
 on:
   release:
@@ -10,9 +17,7 @@ on:
 
 jobs:
   deploy:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
@@ -29,4 +34,15 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_UPLOAD_TOKEN }}
       run: |
         echo "$GITHUB_EVENT_NAME"
-        # tox -e build,release
+        if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+          export TWINE_REPOSITORY_URL="https://test.pypi.org/legacy"
+          export TWINE_PASSWORD="${{ secrets.TEST_PYPI_UPLOAD_TOKEN }}"
+        elif [[ "$GITHUB_EVENT_NAME" == "release" ]]; then
+          export TWINE_REPOSITORY="pypi"
+          export TWINE_PASSWORD="${{ secrets.PYPI_UPLOAD_TOKEN }}"
+        else
+          echo "Unknown event name: ${GITHUB_EVENT_NAME}"
+          exit 1
+        fi
+
+        tox -e build,release
