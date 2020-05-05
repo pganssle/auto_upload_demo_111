@@ -1,0 +1,8 @@
+.mypy_cache/
+.tox/
+build/
+dist/
+*.egg-info/
+
+*.py[oc]
+.DS_STORE
