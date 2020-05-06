@@ -45,11 +45,11 @@ jobs:
           export TWINE_REPOSITORY_URL="https://test.pypi.org/legacy/"
           export TWINE_PASSWORD="${{ secrets.TEST_PYPI_UPLOAD_TOKEN }}"
         elif [[ "$GITHUB_EVENT_NAME" == "release" ]]; then
-          export TWINE_REPOSITORY_URL="https://upload.pypi.org/legacy/"
+          export TWINE_REPOSITORY="pypi"
           export TWINE_PASSWORD="${{ secrets.PYPI_UPLOAD_TOKEN }}"
         else
           echo "Unknown event name: ${GITHUB_EVENT_NAME}"
           exit 1
         fi
 
-        tox -e release -- --repository-url=${TWINE_REPOSITORY_URL}
+        tox -e release
